@@ -1,11 +1,14 @@
 package org.java.spring_test7.db.pojo;
 
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 
 @Entity
@@ -26,6 +29,9 @@ public class Post {
     @JoinColumn(nullable = false)
     private User user;
 
+    @ManyToMany
+    private List<Tag> tags;
+
     public Post(){
 
     }
@@ -36,6 +42,7 @@ public class Post {
         setContent(Content);
         setLikeCount(likeCount);
         setUser(user);
+        likeCount = 0;
     }
 
     public void setId(Integer id) {
@@ -82,6 +89,22 @@ public class Post {
 
     public User getUser() {
         return user;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
+
+    public void addTag(Tag tag) {
+        tags.add(tag);
+    }
+
+    public void removeTag(Tag tag) {
+        tags = tags.stream().filter(t -> t.getId() != tag.getId()).toList();
     }
 
     @Override

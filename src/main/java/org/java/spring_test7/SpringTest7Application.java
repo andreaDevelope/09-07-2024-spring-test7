@@ -1,10 +1,13 @@
 package org.java.spring_test7;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.java.spring_test7.db.pojo.Post;
+import org.java.spring_test7.db.pojo.Tag;
 import org.java.spring_test7.db.pojo.User;
 import org.java.spring_test7.db.service.PostService;
+import org.java.spring_test7.db.service.TagService;
 import org.java.spring_test7.db.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -19,6 +22,9 @@ public class SpringTest7Application implements CommandLineRunner {
 	@Autowired
 	PostService pos;
 
+	@Autowired
+	TagService ts;
+
 	public static void main(String[] args) throws Exception {
 		SpringApplication.run(SpringTest7Application.class, args);
 	}
@@ -27,6 +33,7 @@ public class SpringTest7Application implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		testCRUDUser();
 		testCRUDPost();
+		testPostsTagsRelationals();
 		System.out.println("END");
 	}
 
@@ -64,7 +71,6 @@ public class SpringTest7Application implements CommandLineRunner {
 		// DELETE
 		us.delete(u2);
 
-		//DELETE USER WHIT POST JOINED
 
 	}
 
@@ -115,4 +121,59 @@ public class SpringTest7Application implements CommandLineRunner {
 		
 	}
 	
+	public void testPostsTagsRelationals(){
+		// CREO IL MIO POST CON RELATIVO USER
+		User u1 = new User("Mio vero Nome", "giuri che è il mio nome", "querty");
+		Post p1 = new Post("Il mio post", " ", 1, u1);
+		
+		// SALVO IL MIO POST CON RELATIVO USER
+		us.save(u1);
+		pos.save(p1);
+		System.out.println(us.getUserById(7));
+		System.out.println(pos.getPostById(5));
+
+		// CREO E SALVO IL MIOP TAG
+		Tag t1 = new Tag("#code");
+		Tag t2 = new Tag("#ManyToMany");
+
+		ts.save(t1);
+		ts.save(t2);
+
+
+		List<User> users = us.getAll();
+		List<Post> posts = pos.getAll();
+		List<Tag> tags = ts.getAll();
+
+		users.forEach(System.out::println);
+		System.out.println("-------------------------------------------------------");
+		posts.forEach(System.out::println);
+		System.out.println("-------------------------------------------------------");
+		tags.forEach(System.out::println);
+
+
+		//RELAZIONO LA TABELLA PADRE POST A TAG
+		Optional<Post> optP1 = pos.getByIdWithTags(3);
+
+		if (optP1.isEmpty()) {
+			System.out.println("Post with id 1 not found");
+			return;
+		}
+
+		System.out.println("-------------------------------------------------------");
+
+		p1 = optP1.get();
+		p1.addTag(t1);
+		p1.addTag(t2);
+		pos.save(p1);
+
+		//RIMUOVO LA RELAZIONE TRA POST E TAG 
+		p1.removeTag(t1);
+		pos.save(p1);
+
+
+		//FINALMENTE POSSO CANCELLARE IL TAG
+		ts.delete(t1);
+
+		System.out.println(t1 + "tag cancellato");
+	}
 }
